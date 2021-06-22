@@ -11,8 +11,7 @@ bungieAxios.defaults.headers.common["X-API-KEY"] = "47e71860d17343f397b45aec65da
 
 export const ContextProvider = (props) => {
     // Player Search Logic
-        
-        // Init State
+        // Init State   
             const initNameVal = {
                 playerOne: {
                     val: ''
@@ -53,21 +52,49 @@ export const ContextProvider = (props) => {
                     privKD_p2: null
                 }
             }
+            const initEmblems = {
+                playerOne_emblem: {
+                    emblem_p1: null
+                },
+                playerTwo_emblem: {
+                   emblem_p2: null
+                }
+            }
+            const initClan = {
+                playerOne_clan: {
+                    clan_p1: null
+                },
+                playerTwo_clan: {
+                   clan_p2: null
+                }
+            }
+            const initTrials = {
+                playerOne_trials: {
+                    trials_p1: null
+                },
+                playerTwo_trials: {
+                   trials_p2: null
+                }
+            }
 
         //Platform
             const initPlatform = {
                 value: 1
             }
         
-        // Player State
+            // General Player State
             const [ nameVal, setNameVal ] = useState(initNameVal)
             const [ username, setUsername ] = useState(initUserName)
-            
-            const [ membershipId, setMembershipId ] = useState(initMembershipId)
             const [ platform, setPlatform ] = useState(initPlatform)
 
+            // Player Statistics
             const [ overallKD, setOverallKD ] = useState(initOverallKD)
             const [ privateMatch, setPrivateMatch ] = useState(initPrivateMatch)
+            const [ trials, setTrials ] = useState(initTrials)
+
+            // Player Banner Card State
+            const [ emblem, setEmblem ] =  useState(initEmblems)
+            const [ clan, setClan ] = useState(initClan)
 
 
         const handleNameChange1 = (e) => {
@@ -89,7 +116,6 @@ export const ContextProvider = (props) => {
                 }
             }))
         }
-
 
         const handleSelectChange = (e) => {
             setPlatform(prev => ({
@@ -129,94 +155,226 @@ export const ContextProvider = (props) => {
         
         const getMembershipId = async () => {
             // Player One
-                const { playerOne } = nameVal
-                bungieAxios.get(`/Destiny2/SearchDestinyPlayer/${platform.value}/${playerOne.val}/`)
-                .then(res => setMembershipId(prev => ({
-                    ...prev,
-                    playerOne_memId: {
-                        memId_p1: res.data.Response[0].membershipId
-                    }
-                }), getPlayerOneGeneralStats(res.data.Response[0].membershipId), 
-                console.log(res.data.Response[0].membershipId)) 
-                )
+            let playerOneMemId
+            const { playerOne } = nameVal
+
+            await bungieAxios.get(`/Destiny2/SearchDestinyPlayer/${platform.value}/${playerOne.val}/`)
+                .then(res => {
+                    playerOneMemId = res.data.Response[0].membershipId
+                }) 
                 .catch(err => console.log(err))
 
-            
-            //Player Two
-                const { playerTwo } = nameVal
-                bungieAxios.get(`/Destiny2/SearchDestinyPlayer/${platform.value}/${playerTwo.val}/`)
-                .then(res => setMembershipId(prev => ({
-                    ...prev,
-                    playerTwo_memId: {
-                        memId_p2: res.data.Response[0].membershipId
-                    }
-                }), getPlayerTwoGeneralStats(res.data.Response[0].membershipId), 
-                console.log(res.data.Response[0].membershipId)) 
-                )
-            }
-
-            const getPlayerOneGeneralStats = (memId) => {
-                // Overall KD
-                bungieAxios(`Destiny2/${platform.value}/Account/${memId}/Character/0/Stats`)
-                    .then(res => setOverallKD(prev => ({
-                        ...prev,
-                        playerOne_ovrKD: {
-                            ovrKD_p1: res.data.Response.allPvP.allTime.killsDeathsRatio.basic.displayValue
-                        }
-                    }))
-                    )
-                    .catch(err => console.log(err))
-                
-                
-            }
-
-            const getPlayerTwoGeneralStats = (memId) => {
-                // Overall KD
-                bungieAxios(`Destiny2/${platform.value}/Account/${memId}/Character/0/Stats`)
-                    .then(res => setOverallKD(prev => ({
-                        ...prev,
-                        playerTwo_ovrKD: {
-                            ovrKD_p2: res.data.Response.allPvP.allTime.killsDeathsRatio.basic.displayValue
-                        }
-                    }))
-                    )
-                    .catch(err => console.log(err))
-            }
-
-        const getGeneralStats = (p1_id, p2_id) => {
-            // Player One
-            bungieAxios(`Destiny2/${platform.value}/Account/${p1_id}/Character/0/Stats`)
-             .then(res => setOverallKD(prev => ({
-                ...prev,
-                playerOne_ovrKD: {
-                    ovrKD_p1: res.data.Response.allPvP.allTime.killsDeathsRatio.basic.displayValue
-                }
-              }))
-            )
-            .catch(err => console.log(err))
-
             // Player Two
-            bungieAxios(`Destiny2/${platform.value}/Account/${p2_id}/Character/0/Stats`)
-             .then(res => setOverallKD(prev => ({
-                ...prev,
-                playerTwo_ovrKD: {
-                    ovrKD_p2: res.data.Response.allPvP.allTime.killsDeathsRatio.basic.displayValue
+            let playerTwoMemId
+            const { playerTwo } = nameVal
+
+            await bungieAxios.get(`/Destiny2/SearchDestinyPlayer/${platform.value}/${playerTwo.val}/`)
+                .then(res => {
+                    playerTwoMemId = res.data.Response[0].membershipId
+                }) 
+                .catch(err => console.log(err))
+
+                
+            console.log(playerOneMemId, playerTwoMemId)
+            return {
+                playerOneMemId,
+                playerTwoMemId
+            }
+        }
+
+        const getPlayerOneGeneralStats = (memId) => {
+            // Overall KD
+            bungieAxios(`Destiny2/${platform.value}/Account/${memId}/Character/0/Stats`)
+                .then(res => setOverallKD(prev => ({
+                    ...prev,
+                    playerOne_ovrKD: {
+                        ovrKD_p1: res.data.Response.allPvP.allTime.killsDeathsRatio.basic.displayValue
+                    }
+                }))
+                )
+        }
+
+        const getPlayerTwoGeneralStats = (memId) => {
+            // Overall KD
+            bungieAxios(`Destiny2/${platform.value}/Account/${memId}/Character/0/Stats`)
+                .then(res => setOverallKD(prev => ({
+                    ...prev,
+                    playerTwo_ovrKD: {
+                        ovrKD_p2: res.data.Response.allPvP.allTime.killsDeathsRatio.basic.displayValue
+                    }
+                }))
+                )
+                .catch(err => console.log(err))
+        }
+
+        const getPlayerOneBanner = async (memId) => {
+            let allCharacters = []
+            let allCharactersIds 
+            let dateLastPlayed
+
+            // Get dateLastPlayed
+            await bungieAxios(`/Destiny2/1/Profile/${memId}/?components=100`)
+                .then(res => {
+                    dateLastPlayed = res.data.Response.profile.data.dateLastPlayed
+                })
+                .catch(err => console.log(err))
+                
+            // Get allCharacterIds
+            await bungieAxios(`/Destiny2/1/Profile/${memId}/?components=100`)
+                .then(res => {
+                    allCharactersIds = res.data.Response.profile.data.characterIds
+                })
+                .catch(err => console.log(err))
+
+            // Get allCharacters
+            await bungieAxios(`/Destiny2/1/Profile/${memId}/?components=200`)
+                .then(res => {
+                    allCharacters = [res.data.Response.characters.data]
+                })
+                .catch(err => console.log(err))
+
+               const char1 = allCharactersIds[0]
+               const char2 = allCharactersIds[1] 
+               const char3 = allCharactersIds[2]  
+
+               const emblemPathChar1 = allCharacters[0][`${char1}`].emblemBackgroundPath
+               const emblemPathChar2 = allCharacters[0][`${char2}`].emblemBackgroundPath
+               const emblemPathChar3 = allCharacters[0][`${char3}`].emblemBackgroundPath
+
+               // Determine which char was last played & set emblem state to said char emblem
+                if(allCharacters[0][`${char1}`].dateLastPlayed === dateLastPlayed){
+                    setEmblem(prev => ({
+                        ...prev,
+                        playerOne_emblem: {
+                            emblem_p1: `https://www.bungie.net${emblemPathChar1}`
+                        }
+                    }))
+                    console.log(emblem.playerOne_emblem)
+                } else if(allCharacters[0][`${char2}`].dateLastPlayed === dateLastPlayed) {
+                     setEmblem(prev => ({
+                        ...prev,
+                        playerOne_emblem: {
+                            emblem_p1: `https://www.bungie.net${emblemPathChar2}`
+                        }
+                    }))
+                    console.log(emblem.playerOne_emblem)
+                } else if(allCharacters[0][`${char3}`].dateLastPlayed === dateLastPlayed){
+                    setEmblem(prev => ({
+                        ...prev,
+                        playerOne_emblem: {
+                            emblem_p1: `https://www.bungie.net${emblemPathChar3}`
+                        }
+                    }))
+                    console.log(emblem.playerOne_emblem)
+                } else {
+                    console.log("error")
                 }
-            }))
-            )
-            .catch(err => console.log(err))
         }
 
-        async function getUserStats(){
-            getUsername()
+        const getPlayerTwoBanner = async (memId) => {
+            let allCharacters = []
+            let allCharactersIds 
+            let dateLastPlayed
+
+            // Get dateLastPlayed
+            await bungieAxios(`/Destiny2/1/Profile/${memId}/?components=100`)
+                .then(res => {
+                    dateLastPlayed = res.data.Response.profile.data.dateLastPlayed
+                })
+                .catch(err => console.log(err))
+                
+            // Get allCharacterIds
+            await bungieAxios(`/Destiny2/1/Profile/${memId}/?components=100`)
+                .then(res => {
+                    allCharactersIds = res.data.Response.profile.data.characterIds
+                })
+                .catch(err => console.log(err))
+
+            // Get allCharacters
+            await bungieAxios(`/Destiny2/1/Profile/${memId}/?components=200`)
+                .then(res => {
+                    allCharacters = [res.data.Response.characters.data]
+                })
+                .catch(err => console.log(err))
+
+               const char1 = allCharactersIds[0]
+               const char2 = allCharactersIds[1] 
+               const char3 = allCharactersIds[2]  
+
+               const emblemPathChar1 = allCharacters[0][`${char1}`].emblemBackgroundPath
+               const emblemPathChar2 = allCharacters[0][`${char2}`].emblemBackgroundPath
+               const emblemPathChar3 = allCharacters[0][`${char3}`].emblemBackgroundPath
+
+               // Determine which char was last played & set emblem state to said char emblem
+                if(allCharacters[0][`${char1}`].dateLastPlayed === dateLastPlayed){
+                    setEmblem(prev => ({
+                        ...prev,
+                        playerTwo_emblem: {
+                            emblem_p2: `https://www.bungie.net${emblemPathChar1}`
+                        }
+                    }))
+                    console.log(emblem.playerOne_emblem)
+                } else if(allCharacters[0][`${char2}`].dateLastPlayed === dateLastPlayed) {
+                     setEmblem(prev => ({
+                        ...prev,
+                        playerTwo_emblem: {
+                            emblem_p2: `https://www.bungie.net${emblemPathChar2}`
+                        }
+                    }))
+                    console.log(emblem.playerOne_emblem)
+                } else if(allCharacters[0][`${char3}`].dateLastPlayed === dateLastPlayed){
+                    setEmblem(prev => ({
+                        ...prev,
+                        playerTwo_emblem: {
+                            emblem_p2: `https://www.bungie.net${emblemPathChar3}`
+                        }
+                    }))
+                    console.log(emblem.playerOne_emblem)
+                } else {
+                    console.log("error")
+                }
+        }
+
+        const getPlayerOneClan = (memId) => {
+            bungieAxios(`/GroupV2/User/${platform.value}/${memId}/0/${platform.value}/`)
+                .then(res => setClan(prev => ({
+                    ...prev,
+                    playerOne_clan: {
+                        clan_p1: res.data.Response.results[0].group.name
+                    }
+                }))
+                )
+        }
+
+        const getPlayerTwoClan = (memId) => {
+            bungieAxios(`/GroupV2/User/${platform.value}/${memId}/0/${platform.value}/`)
+                .then(res => setClan(prev => ({
+                    ...prev,
+                    playerTwo_clan: {
+                        clan_p2: res.data.Response.results[0].group.name
+                    }
+                }))
+                )
+        }
+
+
+        async function getUserData(){
             const fetchMembershipId = await getMembershipId()
-            
+            getUsername(fetchMembershipId)
+            getPlayerOneGeneralStats(fetchMembershipId.playerOneMemId)
+            getPlayerTwoGeneralStats(fetchMembershipId.playerTwoMemId)
+
+            getPlayerOneBanner(fetchMembershipId.playerOneMemId)
+            getPlayerTwoBanner(fetchMembershipId.playerTwoMemId)
+
+            getPlayerOneClan(fetchMembershipId.playerOneMemId)
+            getPlayerTwoClan(fetchMembershipId.playerTwoMemId)
         }
 
-        const handleNameSubmit = (e) => {
+        const handleNameSubmit = async (e) => {
             e.preventDefault()
             
-            getUserStats()
+            getUserData().catch(err => console.log(err))
         }
                 
     return(
@@ -230,7 +388,9 @@ export const ContextProvider = (props) => {
                     nameVal,
                     bungieAxios,
                     ...username,
-                    ...overallKD
+                    ...overallKD,
+                    ...emblem,
+                    ...clan
                 }
             }
         >

@@ -3,8 +3,6 @@ import { Context } from '../../context/ContextProvider.js'
 
 export const SearchBar = () => {
     const { handleNameChange1, handleNameChange2, handleNameSubmit, nameVal, handleSelectChange, platform } = useContext(Context)
-    console.log(nameVal.playerOne)
-    console.log(nameVal.playerTwo)
 
     return (
         <div>
